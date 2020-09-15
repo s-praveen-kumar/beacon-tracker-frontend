@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "bootstrap": "^4.5.2",
+    "jquery": "^3.5.1",
     "sirv-cli": "^1.0.0"
   }
 }
