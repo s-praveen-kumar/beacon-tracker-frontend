@@ -7,6 +7,7 @@
 <script>
 
   const SERVER = "http://localhost:3000";
+  let loading = false;
   let username, password;
   let username_valid, password_valid, error_msg;
   function login() {
@@ -21,6 +22,7 @@
       password_valid = "";
     }
     if(username && password){
+      loading = true;
       fetch(SERVER + "/login", {
         method: "POST",
         mode: "cors",
@@ -38,6 +40,7 @@
         })
         .then((res) => {
           console.log(res)
+          loading = false;
           if(res.success){
             error_msg = "";
             //Go to main page
@@ -45,7 +48,10 @@
             error_msg = res.msg;
           }
         })
-        .catch((err) => error_msg = "Oops! Something went wrong");
+        .catch((err) => {
+          error_msg = "Oops! Something went wrong";
+          loading = false;
+        });
     }
 }
 </script>
@@ -82,12 +88,19 @@
           />
           <div class="invalid-feedback">Please enter password</div>
         </div>
+          {#if !loading}
         <button
           on:click="{login}"
           class="form-control btn-primary"
-        >
-          Login
+        >  Login
         </button>
+        {:else}
+        <div class = "text-center">
+        <div class="spinner-border text-info" role="status">
+  <span class="sr-only">Loading...</span>
+</div>
+</div>
+{/if}
         {#if error_msg}
         <div class="alert alert-danger mt-3" role="alert">
           {error_msg}
