@@ -1,27 +1,22 @@
-<style>
-  .bg-teal {
-    background-color: #009688;
-  }
-</style>
-
 <script>
+  import page from "page";
 
   const SERVER = "http://localhost:3000";
   let loading = false;
   let username, password;
   let username_valid, password_valid, error_msg;
   function login() {
-    if(!username){
+    if (!username) {
       username_valid = "is-invalid";
-    } else{
+    } else {
       username_valid = "";
     }
-    if(!password){
+    if (!password) {
       password_valid = "is-invalid";
-    } else{
+    } else {
       password_valid = "";
     }
-    if(username && password){
+    if (username && password) {
       loading = true;
       fetch(SERVER + "/login", {
         method: "POST",
@@ -39,11 +34,12 @@
           return data.json();
         })
         .then((res) => {
-          console.log(res)
+          console.log(res);
           loading = false;
-          if(res.success){
+          if (res.success) {
             error_msg = "";
-            //Go to main page
+            localStorage.setItem("token", res.authToken);
+            page("/register");
           } else {
             error_msg = res.msg;
           }
@@ -53,8 +49,14 @@
           loading = false;
         });
     }
-}
+  }
 </script>
+
+<style>
+  .bg-teal {
+    background-color: #009688;
+  }
+</style>
 
 <main>
   <div class="jumbotron jumbotron-fluid bg-teal">
@@ -64,47 +66,41 @@
     <div class="row">
       <form
         action="javascript:void(0);"
-        class="col-md-6 offset-md-3 col-lg-4 offset-lg-4 shadow p-3 needs-validation"
-      >
+        class="col-md-6 offset-md-3 col-lg-4 offset-lg-4 shadow p-3 bg-white
+          needs-validation">
         <div class="form-group">
           <label class="h5 font-weight-normal" for="username">Username</label>
           <input
-            bind:value="{username}"
+            bind:value={username}
             class="form-control {username_valid}"
             id="username"
             type="text"
-            name="username"
-          />
-        <div class="invalid-feedback">Please enter username</div>
+            name="username" />
+          <div class="invalid-feedback">Please enter username</div>
         </div>
         <div class="form-group">
           <label class="h5 font-weight-normal" for="password">Password</label>
           <input
-            bind:value="{password}"
-            class="form-control  {password_valid}"
+            bind:value={password}
+            class="form-control {password_valid}"
             id="password"
             type="password"
-            name="password"
-          />
+            name="password" />
           <div class="invalid-feedback">Please enter password</div>
         </div>
-          {#if !loading}
-        <button
-          on:click="{login}"
-          class="form-control btn-primary"
-        >  Login
-        </button>
+        {#if !loading}
+          <button on:click={login} class="form-control btn-primary">
+            Login
+          </button>
         {:else}
-        <div class = "text-center">
-        <div class="spinner-border text-info" role="status">
-  <span class="sr-only">Loading...</span>
-</div>
-</div>
-{/if}
+          <div class="text-center">
+            <div class="spinner-border text-info" role="status">
+              <span class="sr-only">Loading...</span>
+            </div>
+          </div>
+        {/if}
         {#if error_msg}
-        <div class="alert alert-danger mt-3" role="alert">
-          {error_msg}
-        </div>
+          <div class="alert alert-danger mt-3" role="alert">{error_msg}</div>
         {/if}
       </form>
     </div>

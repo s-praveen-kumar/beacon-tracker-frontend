@@ -1,13 +1,8 @@
-//import App from "./App.svelte";
-import Register from "./Register.svelte";
+import App from "./App.svelte";
 
-// const app = new App({
-//   target: document.body,
-//   props: {},
-// });
-
-const login = new Register({
+const app = new App({
   target: document.body,
   props: {},
 });
-export default login;
+
+export default app;
