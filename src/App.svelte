@@ -20,6 +20,10 @@
         alert("Please Login to access");
       }
   });
+  page('/logout',()=>{
+    localStorage.setItem("token","");
+    current = Login;
+  })
   page.start();
 </script>
 
