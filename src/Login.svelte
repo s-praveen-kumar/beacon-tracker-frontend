@@ -1,7 +1,7 @@
 <script>
   import page from "page";
 
-  const SERVER = "http://localhost:3000";
+  export let SERVER;
   let loading = false;
   let username, password;
   let username_valid, password_valid, error_msg;
