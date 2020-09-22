@@ -1,6 +1,4 @@
 <script>
-  import Login from "./Login.svelte";
-
   let beaconId,
     aadharNo,
     name,
@@ -20,7 +18,7 @@
   //  const SERVER = "http://127.0.0.1:3000";
   const promise = getUserProfile();
   async function getUserProfile() {
-    const data = await fetch(SERVER + "/user", getOptions);
+    const data = await fetch(SERVER + "/user/get", getOptions);
     const user = await data.json();
     console.log(user);
     if (!user.success) throw Error("Authentication failed");
@@ -30,7 +28,7 @@
   const routePromise = getRoutes();
 
   async function getRoutes() {
-    const data = await fetch(SERVER + "/routes", getOptions);
+    const data = await fetch(SERVER + "/route/get", getOptions);
     const routes = await data.json();
     console.log(routes);
     if (!routes.success) throw Error("Error getting routes");
@@ -44,7 +42,7 @@
   }
 
   async function registerVehicle() {
-    const data = await fetch(SERVER + "/registerVehicle", {
+    const data = await fetch(SERVER + "/vehicle/register", {
       method: "POST",
       mode: "cors",
       headers: {
@@ -65,7 +63,6 @@
     console.log(res);
     return res;
   }
-  document.body.style.backgroundColor = "#80cbc4";
 </script>
 
 <style>
@@ -96,21 +93,6 @@
         </div>
       </div>
     </div>
-    {#if registerPromise}
-      {#await registerPromise}
-        <div class="text-center">
-          <div class="spinner-border text-info" role="status">
-            <span class="sr-only">Loading...</span>
-          </div>
-        </div>
-      {:then res}
-        <div
-          class="alert {res.success ? 'alert-success' : 'alert-danger'}"
-          role="alert">
-          {res.msg}
-        </div>
-      {/await}
-    {/if}
     <div class="container mt-3 pl-0 pr-0 roundcorner bg-white shadow">
       <h2 class="bg-teal p-3 text-white shadow">Registration</h2>
       <form action="javascript:void(0)" class="p-3">
@@ -178,6 +160,21 @@
           Submit
         </button>
       </form>
+      {#if registerPromise}
+        {#await registerPromise}
+          <div class="text-center">
+            <div class="spinner-border text-info" role="status">
+              <span class="sr-only">Loading...</span>
+            </div>
+          </div>
+        {:then res}
+          <div
+            class="alert {res.success ? 'alert-success' : 'alert-danger'}"
+            role="alert">
+            {res.msg}
+          </div>
+        {/await}
+      {/if}
     </div>
   {:catch error}
     <div class="container">
