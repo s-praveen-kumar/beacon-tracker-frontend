@@ -3,7 +3,8 @@
 
   import Login from "./Login.svelte"
   import Register from "./Register.svelte"
-
+  import checkpointreg from "./CheckpointReg.svelte"
+  import UserReg from "./UserReg.svelte"
   const SERVER = "http://127.0.0.1:3000";
   let current = Login;
 
@@ -24,7 +25,21 @@
   page('/logout',()=>{
     localStorage.setItem("token","");
     current = Login;
-  })
+  });
+  page('/checkpointreg', () => {
+
+      current = checkpointreg;
+
+  });
+  page('/logout',()=>{
+    localStorage.setItem("token","");
+    current = Login;
+  });
+  page('/UserReg', () => {
+
+      current = UserReg;
+
+  });
   page.start();
 </script>
 

@@ -72,14 +72,18 @@
   .roundcorner {
     border-radius: 12px;
   }
+  .teal{
+    color: #009688;
+  }
 </style>
+
 
 <main>
   {#await promise}
     <p>Loading...</p>
   {:then user}
-    <div class="jumbotron jumbotron-fluid bg-teal">
-      <h1 class="display-4 text-white p-2">Reenigne</h1>
+    <div class="jumbotron jumbotron-fluid bg-white">
+      <h1 class="display-4 teal p-2">Reenigne</h1>
       <div class="dropdown mr-2 float-sm-right">
         <button
           class="btn btn-lg bg-teal text-white dropdown-toggle"
@@ -93,7 +97,9 @@
         </div>
       </div>
     </div>
-    <div class="container mt-3 pl-0 pr-0 roundcorner bg-white shadow">
+    <div class="container mt-3 pl-0 pr-0">
+      <div class="row">
+        <div class="col-md-4 offset-md-4 roundcorner bg-white shadow">
       <h2 class="bg-teal p-3 text-white shadow">Registration</h2>
       <form action="javascript:void(0)" class="p-3">
         <div class="form-group">
@@ -175,6 +181,8 @@
           </div>
         {/await}
       {/if}
+    </div>
+    </div>
     </div>
   {:catch error}
     <div class="container">
