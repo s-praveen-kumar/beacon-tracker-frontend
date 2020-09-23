@@ -8,7 +8,7 @@
 
   const SERVER = "http://127.0.0.1:3000";
   let current = Login;
-  document.body.style.backgroundColor = "#80cbc4";
+  document.body.style.backgroundColor = "#009688";
   page('/', () => {
     if(localStorage.getItem("token"))
       current = Register;

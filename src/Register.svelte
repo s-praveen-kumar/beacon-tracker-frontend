@@ -15,7 +15,6 @@
       Authorization: "Bearer " + localStorage.getItem("token"),
     },
   };
-  //  const SERVER = "http://127.0.0.1:3000";
   const promise = getUserProfile();
   async function getUserProfile() {
     const data = await fetch(SERVER + "/user/get", getOptions);
@@ -66,24 +65,26 @@
 </script>
 
 <style>
+  .bg-teal-dark{
+    background-color: #00796B;
+  }
   .bg-teal {
     background-color: #009688;
   }
   .roundcorner {
     border-radius: 12px;
   }
-  .teal{
+  .teal {
     color: #009688;
   }
 </style>
-
 
 <main>
   {#await promise}
     <p>Loading...</p>
   {:then user}
-    <div class="jumbotron jumbotron-fluid bg-white">
-      <h1 class="display-4 teal p-2">Reenigne</h1>
+    <div class="jumbotron jumbotron-fluid bg-teal-dark">
+      <h1 class="display-4 text-white p-2">Reenigne</h1>
       <div class="dropdown mr-2 float-sm-right">
         <button
           class="btn btn-lg bg-teal text-white dropdown-toggle"
@@ -97,92 +98,98 @@
         </div>
       </div>
     </div>
-    <div class="container mt-3 pl-0 pr-0">
+    <div class="container">
       <div class="row">
-        <div class="col-md-4 offset-md-4 roundcorner bg-white shadow">
-      <h2 class="bg-teal p-3 text-white shadow">Registration</h2>
-      <form action="javascript:void(0)" class="p-3">
-        <div class="form-group">
-          <label for="beaconId"> Beacon Id: </label>
-          <input
-            bind:value={beaconId}
-            type="text"
-            id="beaconId"
-            name="beaconId"
-            class="form-control" />
-        </div>
-        <div class="form-group">
-          <label for="name"> Name </label>
-          <input
-            bind:value={name}
-            type="text"
-            id="name"
-            name="name"
-            class="form-control" />
-        </div>
-        <div class="form-group">
-          <label for="aadharNo:"> Aadhar No: </label>
-          <input
-            bind:value={aadharNo}
-            type="text"
-            id="aadharNo"
-            name="aadharNo"
-            class="form-control" />
-        </div>
-        <div class="form-group">
-          <label for="vehicle-no"> Vehicle No: </label>
-          <input
-            bind:value={vehicleNo}
-            type="text"
-            id="vehicle-no"
-            name="vehicleNo"
-            class="form-control" />
-        </div>
-        <div class="form-group">
-          <label for="contact"> Contact: </label>
-          <input
-            bind:value={contact}
-            type="text"
-            id="contact"
-            name="contact"
-            class="form-control" />
-        </div>
-        <div class="form-group">
-          <label for="routeSpec"> Route: </label>
-          <select bind:value={routeSpec} class="custom-select" id="routeSpec">
-            {#await routePromise}
-              <option selected>Choose...</option>
-            {:then res}
-              {#each res.routes as route, index}
-                <option value={index}>{route.name}</option>
-              {/each}
-            {/await}
-          </select>
-        </div>
-        <button
-          on:click={handleSubmit}
-          type="submit"
-          class="text-white btn bg-teal shadow">
-          Submit
-        </button>
-      </form>
-      {#if registerPromise}
-        {#await registerPromise}
-          <div class="text-center">
-            <div class="spinner-border text-info" role="status">
-              <span class="sr-only">Loading...</span>
+        <div
+          class="col-md-6 mt-3 pl-0 pr-0 offset-md-3 roundcorner">
+          <h2 class="bg-teal p-3 text-white">Registration</h2>
+          <form action="javascript:void(0)" class="p-3">
+            <div class="form-group">
+              <label class="text-white" for="beaconId"> Beacon Id: </label>
+              <input
+                bind:value={beaconId}
+                type="text"
+                id="beaconId"
+                name="beaconId"
+                class="form-control" />
             </div>
-          </div>
-        {:then res}
-          <div
-            class="alert {res.success ? 'alert-success' : 'alert-danger'}"
-            role="alert">
-            {res.msg}
-          </div>
-        {/await}
-      {/if}
-    </div>
-    </div>
+            <div class="form-group">
+              <label class="text-white" for="name"> Name: </label>
+              <input
+                bind:value={name}
+                type="text"
+                id="name"
+                name="name"
+                class="form-control" />
+            </div>
+            <div class="form-group">
+              <label class="text-white" for="aadharNo:"> Aadhar No: </label>
+              <input
+                bind:value={aadharNo}
+                type="text"
+                id="aadharNo"
+                name="aadharNo"
+                class="form-control" />
+            </div>
+            <div class="form-group">
+              <label class="text-white" for="vehicle-no"> Vehicle No: </label>
+              <input
+                bind:value={vehicleNo}
+                type="text"
+                id="vehicle-no"
+                name="vehicleNo"
+                class="form-control" />
+            </div>
+            <div class="form-group">
+              <label class="text-white" for="contact"> Contact: </label>
+              <input
+                bind:value={contact}
+                type="text"
+                id="contact"
+                name="contact"
+                class="form-control" />
+            </div>
+            <div class="form-group">
+              <label class="text-white" for="routeSpec"> Route: </label>
+              <select
+                bind:value={routeSpec}
+                class="custom-select"
+                id="routeSpec">
+                {#await routePromise}
+                  <option selected>Choose...</option>
+                {:then res}
+                  {#each res.routes as route, index}
+                    <option value={index}>{route.name}</option>
+                  {/each}
+                {/await}
+              </select>
+            </div>
+            <center>
+              <button
+                on:click={handleSubmit}
+                type="submit"
+                class="btn bg-white shadow">
+                Submit
+              </button>
+            </center>
+          </form>
+          {#if registerPromise}
+            {#await registerPromise}
+              <div class="text-center">
+                <div class="spinner-border text-info" role="status">
+                  <span class="sr-only">Loading...</span>
+                </div>
+              </div>
+            {:then res}
+              <div
+                class="alert {res.success ? 'alert-success' : 'alert-danger'}"
+                role="alert">
+                {res.msg}
+              </div>
+            {/await}
+          {/if}
+        </div>
+      </div>
     </div>
   {:catch error}
     <div class="container">
