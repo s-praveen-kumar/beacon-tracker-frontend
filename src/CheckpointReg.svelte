@@ -2,21 +2,36 @@
   export let SERVER;
   import L from "leaflet";
   import { onMount } from "svelte";
+  import { GeoSearchControl, OpenStreetMapProvider } from "leaflet-geosearch";
+
+  const provider = new OpenStreetMapProvider();
+
+  const searchControl = new GeoSearchControl({
+    provider: provider,
+    style: "bar",
+    showMarker: false,
+  });
+
   let map;
   let latlng, name, id, pwd;
   let alert_msg,
     alert_class = "invisible";
   let marker = new L.marker();
+
   onMount(() => {
     let options = {
       center: [0, 0],
       zoom: 2,
     };
     map = L.map("map", options);
-    L.tileLayer("https://tiles.wmflabs.org/hikebike/{z}/{x}/{y}.png", {
-      attribution:
-        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | Tiles: wmflabs',
-    }).addTo(map);
+
+    map.addLayer(
+      L.tileLayer("https://tiles.wmflabs.org/hikebike/{z}/{x}/{y}.png", {
+        attribution:
+          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | Tiles: wmflabs',
+      })
+    );
+    map.addControl(searchControl);
     map.on("click", (e) => {
       latlng = e.latlng;
       marker.setLatLng(latlng);
@@ -81,6 +96,7 @@
 
 <main>
   <link rel="stylesheet" href="/leaflet/leaflet.css" />
+  <link rel="stylesheet" href="/leaflet/geosearch.css" />
   <div class="container">
     <div class="row">
       <div class="col-lg-6 p-3">
