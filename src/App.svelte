@@ -5,6 +5,7 @@
   import Register from "./Register.svelte"
   import checkpointreg from "./CheckpointReg.svelte"
   import UserReg from "./UserReg.svelte"
+  import Monitor from "./Monitor.svelte"
 
   const SERVER = "http://127.0.0.1:3000";
   let current = Login;
@@ -41,6 +42,9 @@
       current = UserReg;
 
   });
+  page('/monitor',()=>{
+    current = Monitor;
+  })
   page.start();
 </script>
 

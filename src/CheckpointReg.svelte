@@ -10,6 +10,7 @@
     provider: provider,
     style: "bar",
     showMarker: false,
+    autoClose: true,
   });
 
   let map;
