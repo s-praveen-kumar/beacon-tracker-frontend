@@ -1,7 +1,7 @@
 <script>
   export let SERVER;
   const OSRM_SERVER = "https://routing.openstreetmap.de/routed-car";
-  import L from "leaflet";
+  import L, { marker } from "leaflet";
   import { onMount } from "svelte";
   import VehicleLi from "./VehicleLi.svelte";
   import { formatDateTime, formatRelativeTime } from "./TimeUtils";
@@ -67,10 +67,14 @@
     if (!checkpoints) return;
     for (let [id, cp] of checkpoints.entries()) {
       let marker = L.marker([cp.location.lat, cp.location.lon]);
-      marker.bindPopup(cp.name, {
-        closeOnClick: false,
-        autoClose: false,
-      });
+      marker
+        .bindPopup(cp.name, {
+          closeOnClick: false,
+          autoClose: false,
+        })
+        .on("mouseover", (ev) => {
+          ev.target.getPopup().bringToFront();
+        });
       markers.set(cp._id, marker);
       markerArray.push(marker);
     }
@@ -103,12 +107,52 @@
     currentVehicle = vehicles.get(id);
     markersDisplay.clearLayers();
     let coordinates = "";
-    for (let cpId of currentVehicle.routeSpec) {
+    for (let [index, cpId] of currentVehicle.routeSpec.entries()) {
       const cp = checkpoints.get(cpId);
       markersDisplay.addLayer(markers.get(cpId));
       coordinates += cp.location.lon + "," + cp.location.lat + ";";
+      fetchOSRM(coordinates.slice(0, -1)); //Slice to remove last ;
+      if (index < currentVehicle.journey.length) {
+        if (cpId == currentVehicle.journey[index].checkpoint) {
+          markers
+            .get(cpId)
+            .setPopupContent(
+              cp.name +
+                "<br><span class='text-success'>Reached " +
+                formatRelativeTime(currentVehicle.journey[index].reachedTime) +
+                "</span>"
+            );
+        } else {
+          markers
+            .get(cpId)
+            .setPopupContent(
+              cp.name + "<br><span class='text-warning'>Expected in</span>"
+            );
+          markersDisplay.addLayer(
+            markers.get(currentVehicle.journey[index].checkpoint)
+          );
+          markers
+            .get(currentVehicle.journey[index].checkpoint)
+            .setPopupContent(
+              `${
+                checkpoints.get(currentVehicle.journey[index].checkpoint).name
+              }<br><span class='text-danger'>Restricted Checkpoint<br>Seen ${formatRelativeTime(
+                currentVehicle.journey[index].reachedTime
+              )}</span>`
+            );
+          markers.get(currentVehicle.journey[index].checkpoint).openPopup();
+        }
+      } else if (index == currentVehicle.journey.length) {
+        markers
+          .get(cpId)
+          .setPopupContent(
+            cp.name + "<br><span class='text-warning'>Expected in</span>"
+          );
+      } else {
+        markers.get(cpId).setPopupContent(cp.name);
+      }
+      markers.get(cpId).openPopup();
     }
-    fetchOSRM(coordinates.slice(0, -1)); //Slice to remove last ;
     map.fitBounds(markersDisplay.getBounds().pad(0.05));
   }
 </script>

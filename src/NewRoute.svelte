@@ -43,7 +43,7 @@
     for (let [id, cp] of checkpoints.entries()) {
       let marker = L.marker([cp.location.lat, cp.location.lon]);
       marker._id = id;
-      marker.bindPopup(cp.name, {
+      marker.bindTooltip(cp.name, {
         closeOnClick: false,
         autoClose: false,
       });
@@ -73,7 +73,7 @@
         coordinates += cp.location.lon + "," + cp.location.lat + ";";
       }
       fetchOSRM(coordinates.slice(0, -1)); //Slice to remove last ;
-      map.fitBounds(markersDisplay.getBounds().pad(0.05));
+      //map.fitBounds(markersDisplay.getBounds().pad(0.05));
     }
     routeSpec = routeSpec;
   }
