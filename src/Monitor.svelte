@@ -3,8 +3,6 @@
   const OSRM_SERVER = "https://routing.openstreetmap.de/routed-car";
   import L from "leaflet";
   import { onMount } from "svelte";
-  import CheckpointReg from "./CheckpointReg.svelte";
-  import "./VehicleLi.svelte";
   import VehicleLi from "./VehicleLi.svelte";
   const getOptions = {
     method: "GET",
@@ -17,8 +15,11 @@
 
   let map,
     checkpoints,
-    markers = [];
+    markers = new Map(),
+    markersDisplay,
+    routeLine;
   let vehicles;
+
   const vehiclePromise = fetchVehicles();
 
   onMount(() => {
@@ -30,7 +31,7 @@
     map.addLayer(
       L.tileLayer("https://tiles.wmflabs.org/hikebike/{z}/{x}/{y}.png", {
         attribution:
-          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | Tiles: wmflabs',
+          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | Tiles: wmflabs | Routing: <a href="https://routing.openstreetmap.de">OSRM</a>',
       })
     );
     getCheckPoints();
@@ -54,7 +55,6 @@
       } else {
         console.log(receivedCp.msg);
       }
-      fetchOSRM();
     } catch (err) {
       console.log(err);
       //Display Errors
@@ -62,18 +62,20 @@
   }
 
   function displayCheckpoints() {
-    markers = [];
+    const markerArray = [];
     if (!checkpoints) return;
     for (let [id, cp] of checkpoints.entries()) {
       let marker = L.marker([cp.location.lat, cp.location.lon]);
-      marker.addTo(map).bindPopup(cp.name, {
+      marker.bindPopup(cp.name, {
         closeOnClick: false,
         autoClose: false,
       });
-      markers.push(marker);
+      markers.set(cp._id, marker);
+      markerArray.push(marker);
     }
-    const markerGroup = L.featureGroup(markers);
-    map.fitBounds(markerGroup.getBounds().pad(0.05));
+    markersDisplay = L.featureGroup(markerArray);
+    map.fitBounds(markersDisplay.getBounds().pad(0.05));
+    map.addLayer(markersDisplay);
   }
 
   async function fetchVehicles() {
@@ -85,21 +87,26 @@
     return res.vehicles;
   }
 
-  async function fetchOSRM() {
+  async function fetchOSRM(coordinates) {
     const data = await fetch(
       OSRM_SERVER +
-        `/route/v1/car/${checkpoints.get("sbcolonysignal").location.lon},${
-          checkpoints.get("sbcolonysignal").location.lat
-        };${checkpoints.get("gnmills").location.lon},${
-          checkpoints.get("gnmills").location.lat
-        }?steps=false&geometries=geojson&overview=full`
+        `/route/v1/car/${coordinates}?steps=false&geometries=geojson&overview=full`
     );
     const res = await data.json();
-    L.geoJSON(res.routes[0].geometry).addTo(map);
+    routeLine = L.geoJSON(res.routes[0].geometry);
+    map.addLayer(routeLine);
   }
 
   function vehicleSelected(id) {
-    console.log(vehicles.get(id));
+    markersDisplay.clearLayers();
+    let coordinates = "";
+    for (let cpId of vehicles.get(id).routeSpec) {
+      const cp = checkpoints.get(cpId);
+      markersDisplay.addLayer(markers.get(cpId));
+      coordinates += cp.location.lon + "," + cp.location.lat + ";";
+    }
+    fetchOSRM(coordinates.slice(0, -1)); //Slice to remove last ;
+    map.fitBounds(markersDisplay.getBounds().pad(0.05));
   }
 </script>
 

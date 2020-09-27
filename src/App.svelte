@@ -6,6 +6,7 @@
   import checkpointreg from "./CheckpointReg.svelte"
   import UserReg from "./UserReg.svelte"
   import Monitor from "./Monitor.svelte"
+  import NewRoute from "./NewRoute.svelte"
 
   const SERVER = "http://127.0.0.1:3000";
   let current = Login;
@@ -44,6 +45,9 @@
   });
   page('/monitor',()=>{
     current = Monitor;
+  });
+  page('/newroute',()=>{
+    current = NewRoute;
   })
   page.start();
 </script>

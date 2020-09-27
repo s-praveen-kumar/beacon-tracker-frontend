@@ -74,6 +74,7 @@
           }),
         });
         const res = await data.json();
+
         alert_msg = res.msg;
         if (res.success) {
           alert_class = "alert-success";
@@ -85,6 +86,9 @@
         alert_class = "alert-danger";
       }
     }
+    setTimeout(() => {
+      alert_class = "invisible";
+    }, 3000);
   }
 </script>
 
