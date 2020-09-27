@@ -4,6 +4,7 @@
   import L from "leaflet";
   import { onMount } from "svelte";
   import VehicleLi from "./VehicleLi.svelte";
+  import { formatDateTime, formatRelativeTime } from "./TimeUtils";
   const getOptions = {
     method: "GET",
     mode: "cors",
@@ -18,7 +19,7 @@
     markers = new Map(),
     markersDisplay,
     routeLine;
-  let vehicles;
+  let vehicles, currentVehicle;
 
   const vehiclePromise = fetchVehicles();
 
@@ -90,17 +91,19 @@
   async function fetchOSRM(coordinates) {
     const data = await fetch(
       OSRM_SERVER +
-        `/route/v1/car/${coordinates}?steps=false&geometries=geojson&overview=full`
+        `/route/v1/car/${coordinates}?steps=false&geometries=geojson&overview=full&continue_straight=true`
     );
     const res = await data.json();
+    if (routeLine) map.removeLayer(routeLine);
     routeLine = L.geoJSON(res.routes[0].geometry);
     map.addLayer(routeLine);
   }
 
   function vehicleSelected(id) {
+    currentVehicle = vehicles.get(id);
     markersDisplay.clearLayers();
     let coordinates = "";
-    for (let cpId of vehicles.get(id).routeSpec) {
+    for (let cpId of currentVehicle.routeSpec) {
       const cp = checkpoints.get(cpId);
       markersDisplay.addLayer(markers.get(cpId));
       coordinates += cp.location.lon + "," + cp.location.lat + ";";
@@ -129,13 +132,66 @@
     top: 0;
     z-index: 1000;
     right: 0;
+    max-height: 360px;
+    overflow: scroll;
+    -webkit-overflow-scrolling: touch;
+  }
+  #selectedVehicle {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    z-index: 1000;
   }
 </style>
 
 <main>
   <link rel="stylesheet" href="/leaflet/leaflet.css" />
   <div id="monitorMap" />
+  {#if currentVehicle}
+    <button
+      class="card p-2"
+      id="selectedVehicle"
+      data-toggle="modal"
+      data-target="#detailsModal">
+      <h5 class="card-title">
+        <strong>{currentVehicle.beaconId}</strong> - {currentVehicle.vehicleNo}
+      </h5>
+      <h6 class="card-subtitle">{currentVehicle.name}</h6>
+    </button>
 
+    <div class="modal fade" id="detailsModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">{currentVehicle.vehicleNo}</h5>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <strong>Driver Name:</strong>
+            {currentVehicle.name}<br />
+            <strong>Beacon ID:</strong>
+            {currentVehicle.beaconId}<br />
+            <strong>Contact:</strong>
+            {currentVehicle.contact}<br />
+            <strong>Entry Time:</strong>
+            {formatDateTime(currentVehicle.entryTime)} ( {formatRelativeTime(currentVehicle.entryTime)}
+            )<br />
+            <strong>Last seen at</strong>
+            {checkpoints.get(currentVehicle.journey[currentVehicle.journey.length - 1].checkpoint).name}
+            on {formatDateTime(currentVehicle.journey[currentVehicle.journey.length - 1].reachedTime)}
+            ( {formatRelativeTime(currentVehicle.journey[currentVehicle.journey.length - 1].reachedTime)}
+            )
+          </div>
+        </div>
+      </div>
+    </div>
+  {/if}
   <button
     class="btn bg-teal top-right text-white"
     type="button"
@@ -162,6 +218,7 @@
         </div>
       {/await}
     </div>
+
     <button
       class="btn bg-teal text-white"
       type="button"

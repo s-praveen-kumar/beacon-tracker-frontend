@@ -4,7 +4,8 @@
     name,
     vehicleNo,
     routeSpec = 0,
-    contact;
+    contact,
+    alert_visibility = "";
   let routesArray;
   export let SERVER;
   const getOptions = {
@@ -60,13 +61,15 @@
     });
     const res = await data.json();
     console.log(res);
+    alert_visibility = "";
+    setTimeout(() => (alert_visibility = "invisible"), 4000);
     return res;
   }
 </script>
 
 <style>
-  .bg-teal-dark{
-    background-color: #00796B;
+  .bg-teal-dark {
+    background-color: #00796b;
   }
   .bg-teal {
     background-color: #009688;
@@ -100,8 +103,7 @@
     </div>
     <div class="container">
       <div class="row">
-        <div
-          class="col-md-6 mt-3 pl-0 pr-0 offset-md-3 roundcorner">
+        <div class="col-md-6 mt-3 pl-0 pr-0 offset-md-3 roundcorner">
           <h2 class="bg-teal p-3 text-white">Registration</h2>
           <form action="javascript:void(0)" class="p-3">
             <div class="form-group">
@@ -182,7 +184,8 @@
               </div>
             {:then res}
               <div
-                class="alert {res.success ? 'alert-success' : 'alert-danger'}"
+                class="alert {res.success ? 'alert-success' : 'alert-danger'}
+                  {alert_visibility}"
                 role="alert">
                 {res.msg}
               </div>

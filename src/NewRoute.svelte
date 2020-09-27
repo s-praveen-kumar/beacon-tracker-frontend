@@ -81,7 +81,7 @@
   async function fetchOSRM(coordinates) {
     const data = await fetch(
       OSRM_SERVER +
-        `/route/v1/car/${coordinates}?steps=false&geometries=geojson&overview=full`
+        `/route/v1/car/${coordinates}?steps=false&geometries=geojson&overview=full&continue_straight=true`
     );
     const res = await data.json();
     routeLine = L.geoJSON(res.routes[0].geometry);
