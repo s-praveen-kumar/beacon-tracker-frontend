@@ -16,14 +16,7 @@
       Authorization: "Bearer " + localStorage.getItem("token"),
     },
   };
-  const promise = getUserProfile();
-  async function getUserProfile() {
-    const data = await fetch(SERVER + "/user/get", getOptions);
-    const user = await data.json();
-    console.log(user);
-    if (!user.success) throw Error("Authentication failed");
-    return user;
-  }
+
 
   const routePromise = getRoutes();
 
@@ -83,24 +76,6 @@
 </style>
 
 <main>
-  {#await promise}
-    <p>Loading...</p>
-  {:then user}
-    <div class="jumbotron jumbotron-fluid bg-teal-dark">
-      <h1 class="display-4 text-white p-2">Reenigne</h1>
-      <div class="dropdown mr-2 float-sm-right">
-        <button
-          class="btn btn-lg bg-teal text-white dropdown-toggle"
-          type="button"
-          id="userDropdown"
-          data-toggle="dropdown">
-          {user.name}
-        </button>
-        <div class="dropdown-menu">
-          <a class="dropdown-item" href="/logout">Logout</a>
-        </div>
-      </div>
-    </div>
     <div class="container">
       <div class="row">
         <div class="col-md-6 mt-3 pl-0 pr-0 offset-md-3 roundcorner">
@@ -194,14 +169,4 @@
         </div>
       </div>
     </div>
-  {:catch error}
-    <div class="container">
-      <div class="alert alert-danger mt-4" role="alert">
-        <h4 class="alert-heading">Oops!</h4>
-        <p>An error has occured :(</p>
-        <hr />
-        <a href="/logout" class="mb-0 alert-link">Go back to Login page</a>
-      </div>
-    </div>
-  {/await}
 </main>
