@@ -55,6 +55,7 @@
         aadharNo,
         name,
         vehicleNo,
+        routeId: routesArray[routeSpec]._id,
         routeSpec: routesArray[routeSpec].path,
         contact,
       }),

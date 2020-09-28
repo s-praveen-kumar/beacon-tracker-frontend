@@ -1,7 +1,6 @@
 <script>
   export let SERVER;
-  const OSRM_SERVER = "https://routing.openstreetmap.de/routed-car";
-  import L, { marker } from "leaflet";
+  import L from "leaflet";
   import { onMount } from "svelte";
   import VehicleLi from "./VehicleLi.svelte";
   import { formatDateTime, formatRelativeTime } from "./TimeUtils";
@@ -16,6 +15,7 @@
 
   let map,
     checkpoints,
+    routes,
     markers = new Map(),
     markersDisplay,
     routeLine;
@@ -36,17 +36,10 @@
       })
     );
     getCheckPoints();
+    getRoutes();
   });
 
   async function getCheckPoints() {
-    const getOptions = {
-      method: "GET",
-      mode: "cors",
-      credentials: "include",
-      headers: {
-        Authorization: "Bearer " + localStorage.getItem("token"),
-      },
-    };
     try {
       const data = await fetch(SERVER + "/cp/get", getOptions);
       const receivedCp = await data.json();
@@ -55,6 +48,21 @@
         displayCheckpoints();
       } else {
         console.log(receivedCp.msg);
+      }
+    } catch (err) {
+      console.log(err);
+      //Display Errors
+    }
+  }
+
+  async function getRoutes() {
+    try {
+      const data = await fetch(SERVER + "/route/get", getOptions);
+      const receivedRoutes = await data.json();
+      if (receivedRoutes.success) {
+        routes = new Map(receivedRoutes.routes.map((i) => [i._id, i]));
+      } else {
+        console.log(receivedRoutes.msg);
       }
     } catch (err) {
       console.log(err);
@@ -92,26 +100,20 @@
     return res.vehicles;
   }
 
-  async function fetchOSRM(coordinates) {
-    const data = await fetch(
-      OSRM_SERVER +
-        `/route/v1/car/${coordinates}?steps=false&geometries=geojson&overview=full&continue_straight=true`
-    );
-    const res = await data.json();
+  function renderRoute(route) {
     if (routeLine) map.removeLayer(routeLine);
-    routeLine = L.geoJSON(res.routes[0].geometry);
+    routeLine = L.geoJSON(route.geometry);
     map.addLayer(routeLine);
   }
 
-  function vehicleSelected(id) {
+  async function vehicleSelected(id) {
     currentVehicle = vehicles.get(id);
     markersDisplay.clearLayers();
-    let coordinates = "";
+    const route = routes.get(currentVehicle.routeId).route;
+    renderRoute(route);
     for (let [index, cpId] of currentVehicle.routeSpec.entries()) {
       const cp = checkpoints.get(cpId);
       markersDisplay.addLayer(markers.get(cpId));
-      coordinates += cp.location.lon + "," + cp.location.lat + ";";
-      fetchOSRM(coordinates.slice(0, -1)); //Slice to remove last ;
       if (index < currentVehicle.journey.length) {
         if (cpId == currentVehicle.journey[index].checkpoint) {
           markers
@@ -123,10 +125,17 @@
                 "</span>"
             );
         } else {
+          let expectedTime =
+            new Date(currentVehicle.journey[index - 1].reachedTime).getTime() +
+            route.legs[index - 1].duration * 1000;
           markers
             .get(cpId)
             .setPopupContent(
-              cp.name + "<br><span class='text-warning'>Expected in</span>"
+              `${
+                cp.name
+              }<br><span class='text-warning'>Expected ${formatRelativeTime(
+                expectedTime
+              )}</span>`
             );
           markersDisplay.addLayer(
             markers.get(currentVehicle.journey[index].checkpoint)
@@ -143,10 +152,17 @@
           markers.get(currentVehicle.journey[index].checkpoint).openPopup();
         }
       } else if (index == currentVehicle.journey.length) {
+        let expectedTime =
+          new Date(currentVehicle.journey[index - 1].reachedTime).getTime() +
+          route.legs[index - 1].duration * 1000;
         markers
           .get(cpId)
           .setPopupContent(
-            cp.name + "<br><span class='text-warning'>Expected in</span>"
+            `${
+              cp.name
+            }<br><span class='text-warning'>Expected ${formatRelativeTime(
+              expectedTime
+            )}</span>`
           );
       } else {
         markers.get(cpId).setPopupContent(cp.name);
@@ -176,6 +192,8 @@
     top: 0;
     z-index: 1000;
     right: 0;
+  }
+  #vehicle-list {
     max-height: 360px;
     overflow: scroll;
     -webkit-overflow-scrolling: touch;
@@ -244,7 +262,7 @@
     &#x1F441; &#x25BC;
   </button>
   <div class="collapse" id="collapseVehicles">
-    <div class="list-group">
+    <div class="list-group" id="vehicle-list">
       {#await vehiclePromise then vehicles}
         {#each vehicles as vehicle}
           <VehicleLi
