@@ -41,10 +41,10 @@
           if (res.success) {
             error_msg = "";
             localStorage.setItem("token", res.authToken);
-            page("/register");
-          } else {
-            error_msg = res.msg;
+            page("/login");
           }
+            else
+            error_msg = res.msg;
         })
         .catch((err) => {
           error_msg = "Oops! Something went wrong";
@@ -55,13 +55,16 @@
 </script>
 
 <style>
+.bg-teal-dark {
+    background-color: #00796b;
+  }
   .bg-teal {
     background-color: #009688;
   }
 </style>
 
 <main>
-  <div class="jumbotron jumbotron-fluid bg-teal">
+  <div class="jumbotron jumbotron-fluid bg-teal-dark">
     <h1 class="display-4 text-white p-2">Reenigne</h1>
   </div>
   <div class="container">

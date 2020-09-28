@@ -1,8 +1,41 @@
 <script>
   export let SERVER;
   let name, password,role,username;
-  let alert_class;
+  let alert_class="invisible";
   let alert_msg;
+
+  async function submit(){
+    try {
+        alert_class = "alert-warning";
+        alert_msg = "loading...";
+        const data = await fetch(SERVER + "/user/create", {
+          method: "POST",
+          mode: "cors",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + localStorage.getItem("token"),
+          },
+          body: JSON.stringify({
+            username,name,password,role
+          }),
+        });
+        const res = await data.json();
+
+        alert_msg = res.msg;
+        if (res.success) {
+          alert_class = "alert-success";
+        } else {
+          alert_class = "alert-danger";
+        }
+      } catch (err) {
+        alert_msg = "An error occurred :(";
+        alert_class = "alert-danger";
+      }
+    setTimeout(() => {
+      alert_class = "invisible";
+    }, 3000);
+  }
 </script>
 <style>
   .bg-teal {
@@ -15,9 +48,9 @@
 <main>
 <div class="container">
   <div class="row">
-    <div class="col-lg-4 p-8">
+    <div class="col-lg-4 offset-lg-4 p-2">
       <h2 class="text-white">User Registration</h2>
-      <form>
+      <form action="javascript:void(0)">
         <div class="form-group">
           <label class="control-label text-white" for="name">Full Name:</label>
           <input

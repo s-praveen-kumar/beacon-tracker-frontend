@@ -62,9 +62,7 @@
 </script>
 
 <style>
-  .bg-teal-dark {
-    background-color: #00796b;
-  }
+
   .bg-teal {
     background-color: #009688;
   }
