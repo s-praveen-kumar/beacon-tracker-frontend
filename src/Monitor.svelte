@@ -1,6 +1,7 @@
 <script>
   export let SERVER;
   import L from "leaflet";
+  import io from "./socket.io";
   import { onMount } from "svelte";
   import VehicleLi from "./VehicleLi.svelte";
   import { formatDateTime, formatRelativeTime } from "./TimeUtils";
@@ -22,6 +23,7 @@
     markersDisplay,
     routeLine;
   let vehicles, currentVehicle;
+  let socket = io(SERVER);
 
   const vehiclePromise = fetchVehicles();
 
@@ -234,8 +236,26 @@
       while (parent.firstChild) {
         parent.removeChild(parent.firstChild);
       }
-    }, 5000);
+    }, 10000);
   }
+
+  socket.on("newVehicle", (data) => {
+    vehicles.set(data._id, data);
+    vehicles = vehicles;
+    checkVehicleStatus();
+  });
+
+  socket.on("reload", () => {
+    window.location.reload();
+  });
+
+  socket.on("track", (data) => {
+    vehicles.get(data.vehicleId).journey = data.journey;
+    checkVehicleStatus();
+    if (currentVehicle._id == data.vehicleId) {
+      updateVehicle();
+    }
+  });
 
   setInterval(() => {
     if (currentVehicle) {
