@@ -126,13 +126,25 @@
       markersDisplay.addLayer(markers.get(cpId));
       if (index < currentVehicle.journey.length) {
         if (cpId == currentVehicle.journey[index].checkpoint) {
+          let speed = "";
+          if (index != 0) {
+            let distance = route.legs[index - 1].distance / 1000; //Distance in km
+            let time =
+              (new Date(currentVehicle.journey[index].reachedTime).getTime() -
+                new Date(
+                  currentVehicle.journey[index - 1].reachedTime
+                ).getTime()) /
+              3600000;
+            speed = distance / time;
+            speed = speed.toFixed(2) + " km/h";
+          }
           markers
             .get(cpId)
             .setPopupContent(
               cp.name +
-                "<br><span class='text-success'>Reached " +
-                formatRelativeTime(currentVehicle.journey[index].reachedTime) +
-                "</span>"
+                `<br><span class='text-success'>Reached ${formatRelativeTime(
+                  currentVehicle.journey[index].reachedTime
+                )}</span><br>${speed}`
             );
         } else {
           let expectedTime =
@@ -266,9 +278,6 @@
 </script>
 
 <style>
-  .bg-teal {
-    background-color: #009688;
-  }
   #monitorMap {
     width: 100vw;
     height: 100vh;

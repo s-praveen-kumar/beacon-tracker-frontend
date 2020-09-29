@@ -8,6 +8,7 @@
   import Monitor from "./Monitor.svelte";
   import NewRoute from "./NewRoute.svelte";
   import CheckpointReg from "./CheckpointReg.svelte";
+  import TestPage from "./TestPage.svelte";
 
   //  const SERVER = "https://iam.engineer/api";
   const SERVER = "http://127.0.0.1:3000";
@@ -52,6 +53,9 @@
   page("/newRoute", () => {
     current = NewRoute;
   });
+  page("/testPage", () => {
+    current = TestPage;
+  });
 
   page.start();
 
@@ -86,6 +90,9 @@
   .bg-teal-dark {
     background-color: #00796b;
   }
+  :global(.bg-teal) {
+    background-color: #009688;
+  }
 </style>
 
 {#if current == Login || !loggedIn}
@@ -112,6 +119,9 @@
           </li>
           <li class="nav-item">
             <a class="nav-link" href="/monitor">Track</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/testPage" target="_blank">TestPage</a>
           </li>
           <li class="nav-item dropdown">
             <a
