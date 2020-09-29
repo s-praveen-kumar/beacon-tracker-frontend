@@ -160,7 +160,7 @@
   }
   #routeList {
     position: fixed;
-    top: 0;
+    bottom: 0;
     z-index: 1000;
     right: 0;
   }
@@ -169,7 +169,7 @@
     height: 100vh;
   }
   .list-group {
-    max-height: 300px;
+    max-height: 150px;
     margin-bottom: 10px;
     overflow: scroll;
     -webkit-overflow-scrolling: touch;

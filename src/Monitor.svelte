@@ -4,6 +4,8 @@
   import { onMount } from "svelte";
   import VehicleLi from "./VehicleLi.svelte";
   import { formatDateTime, formatRelativeTime } from "./TimeUtils";
+
+  const DURATION_SCALE = 3;
   const getOptions = {
     method: "GET",
     mode: "cors",
@@ -68,6 +70,7 @@
       console.log(err);
       //Display Errors
     }
+    if (checkpoints && vehicles) checkVehicleStatus();
   }
 
   function displayCheckpoints() {
@@ -95,9 +98,9 @@
     const data = await fetch(SERVER + "/active", getOptions);
     const res = await data.json();
     if (!res.success) throw Error("Error getting vehicles");
-    vehicles = res.vehicles;
-    vehicles = new Map(res.vehicles.map((i) => [i.beaconId, i]));
-    return res.vehicles;
+    vehicles = new Map(res.vehicles.map((i) => [i._id, i]));
+    //    checkVehicleStatus();
+    return vehicles;
   }
 
   function renderRoute(route) {
@@ -106,8 +109,13 @@
     map.addLayer(routeLine);
   }
 
-  async function vehicleSelected(id) {
+  function vehicleSelected(id) {
     currentVehicle = vehicles.get(id);
+    updateVehicle();
+    map.fitBounds(markersDisplay.getBounds().pad(0.05));
+  }
+
+  function updateVehicle() {
     markersDisplay.clearLayers();
     const route = routes.get(currentVehicle.routeId).route;
     renderRoute(route);
@@ -127,7 +135,7 @@
         } else {
           let expectedTime =
             new Date(currentVehicle.journey[index - 1].reachedTime).getTime() +
-            route.legs[index - 1].duration * 1000;
+            route.legs[index - 1].duration * DURATION_SCALE * 1000;
           markers
             .get(cpId)
             .setPopupContent(
@@ -154,7 +162,7 @@
       } else if (index == currentVehicle.journey.length) {
         let expectedTime =
           new Date(currentVehicle.journey[index - 1].reachedTime).getTime() +
-          route.legs[index - 1].duration * 1000;
+          route.legs[index - 1].duration * DURATION_SCALE * 1000;
         markers
           .get(cpId)
           .setPopupContent(
@@ -169,8 +177,52 @@
       }
       markers.get(cpId).openPopup();
     }
-    map.fitBounds(markersDisplay.getBounds().pad(0.05));
   }
+
+  function checkVehicleStatus() {
+    for (let [id, vehicle] of vehicles.entries()) {
+      let flag = false;
+      for (let [index, cpId] of vehicle.routeSpec.entries()) {
+        if (index < vehicle.journey.length) {
+          if (cpId != vehicle.journey[index].checkpoint) {
+            flag = true;
+            if (!vehicle.status || !vehicle.status.startsWith("Restricted")) {
+              //TODO: SEND ALERT HERE
+              vehicle.status =
+                "Restricted - in " +
+                checkpoints.get(
+                  vehicle.journey[vehicle.journey.length - 1].checkpoint
+                ).name;
+            }
+          }
+        } else if (index == vehicle.journey.length) {
+          let route = routes.get(vehicle.routeId).route;
+          let expectedTime =
+            new Date(vehicle.journey[index - 1].reachedTime).getTime() +
+            route.legs[index - 1].duration * DURATION_SCALE * 1000;
+          if (new Date().getTime() > expectedTime) {
+            flag = true;
+            if (!vehicle.status) {
+              //TODO: SEND ALERT HERE
+              vehicle.status =
+                "Missing - " + checkpoints.get(vehicle.routeSpec[index]).name;
+            }
+          }
+        }
+      }
+      if (!flag && vehicle.status) {
+        vehicle.status = "";
+      }
+    }
+    vehicles = vehicles; //To trigger Svelte reactive update
+  }
+
+  setInterval(() => {
+    if (currentVehicle) {
+      updateVehicle();
+    }
+    checkVehicleStatus();
+  }, 60000); //Auto update once every min
 </script>
 
 <style>
@@ -194,7 +246,8 @@
     right: 0;
   }
   #vehicle-list {
-    max-height: 360px;
+    max-height: 300px;
+    max-width: 300px;
     overflow: scroll;
     -webkit-overflow-scrolling: touch;
   }
@@ -216,7 +269,9 @@
       data-toggle="modal"
       data-target="#detailsModal">
       <h5 class="card-title">
-        <strong>{currentVehicle.beaconId}</strong> - {currentVehicle.vehicleNo}
+        <strong>{currentVehicle.beaconId}</strong>
+        -
+        {currentVehicle.vehicleNo}
       </h5>
       <h6 class="card-subtitle">{currentVehicle.name}</h6>
     </button>
@@ -242,12 +297,16 @@
             <strong>Contact:</strong>
             {currentVehicle.contact}<br />
             <strong>Entry Time:</strong>
-            {formatDateTime(currentVehicle.entryTime)} ( {formatRelativeTime(currentVehicle.entryTime)}
+            {formatDateTime(currentVehicle.entryTime)}
+            (
+            {formatRelativeTime(currentVehicle.entryTime)}
             )<br />
             <strong>Last seen at</strong>
             {checkpoints.get(currentVehicle.journey[currentVehicle.journey.length - 1].checkpoint).name}
-            on {formatDateTime(currentVehicle.journey[currentVehicle.journey.length - 1].reachedTime)}
-            ( {formatRelativeTime(currentVehicle.journey[currentVehicle.journey.length - 1].reachedTime)}
+            on
+            {formatDateTime(currentVehicle.journey[currentVehicle.journey.length - 1].reachedTime)}
+            (
+            {formatRelativeTime(currentVehicle.journey[currentVehicle.journey.length - 1].reachedTime)}
             )
           </div>
         </div>
@@ -263,13 +322,14 @@
   </button>
   <div class="collapse" id="collapseVehicles">
     <div class="list-group" id="vehicle-list">
-      {#await vehiclePromise then vehicles}
-        {#each vehicles as vehicle}
+      {#await vehiclePromise then v}
+        {#each [...vehicles] as [id, vehicle] (id)}
           <VehicleLi
-            on:click={() => vehicleSelected(vehicle.beaconId)}
+            on:click={() => vehicleSelected(vehicle._id)}
             vehicleNo={vehicle.vehicleNo}
             driverName={vehicle.name}
-            beaconID={vehicle.beaconId} />
+            beaconID={vehicle.beaconId}
+            status={vehicle.status} />
         {/each}
       {:catch err}
         <div class="alert alert-danger" role="alert">

@@ -9,6 +9,7 @@
   import NewRoute from "./NewRoute.svelte";
   import CheckpointReg from "./CheckpointReg.svelte";
 
+  //  const SERVER = "https://iam.engineer/api";
   const SERVER = "http://127.0.0.1:3000";
   let loggedIn;
   let userName = "";
@@ -115,7 +116,6 @@
           <li class="nav-item dropdown">
             <a
               class="nav-link dropdown-toggle {userRole == 'admin' ? '' : 'disabled'}"
-              href="#"
               id="navbarDropdown"
               role="button"
               data-toggle="dropdown"

@@ -84,7 +84,7 @@
               <label class="text-white" for="beaconId"> Beacon Id: </label>
               <input
                 bind:value={beaconId}
-                type="text"
+                type="number"
                 id="beaconId"
                 name="beaconId"
                 class="form-control" />
@@ -102,7 +102,7 @@
               <label class="text-white" for="aadharNo:"> Aadhar No: </label>
               <input
                 bind:value={aadharNo}
-                type="text"
+                type="number"
                 id="aadharNo"
                 name="aadharNo"
                 class="form-control" />
@@ -120,7 +120,7 @@
               <label class="text-white" for="contact"> Contact: </label>
               <input
                 bind:value={contact}
-                type="text"
+                type="number"
                 id="contact"
                 name="contact"
                 class="form-control" />
