@@ -187,12 +187,19 @@
           if (cpId != vehicle.journey[index].checkpoint) {
             flag = true;
             if (!vehicle.status || !vehicle.status.startsWith("Restricted")) {
-              //TODO: SEND ALERT HERE
               vehicle.status =
                 "Restricted - in " +
                 checkpoints.get(
                   vehicle.journey[vehicle.journey.length - 1].checkpoint
                 ).name;
+              let element = document.createElement("div");
+              element.innerHTML = `<div class="alert alert-danger alert-dismissible fade show" role="alert">\
+  <strong>${vehicle.vehicleNo}</strong><br/>${vehicle.status}\
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close">\
+    <span aria-hidden="true">&times;</span>\
+  </button>\
+</div>`;
+              document.getElementById("alert-list").appendChild(element);
             }
           }
         } else if (index == vehicle.journey.length) {
@@ -203,9 +210,16 @@
           if (new Date().getTime() > expectedTime) {
             flag = true;
             if (!vehicle.status) {
-              //TODO: SEND ALERT HERE
               vehicle.status =
                 "Missing - " + checkpoints.get(vehicle.routeSpec[index]).name;
+              let element = document.createElement("div");
+              element.innerHTML = `<div class="alert alert-warning alert-dismissible fade show" role="alert">\
+                <strong>${vehicle.vehicleNo}</strong><br/>${vehicle.status}\
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close">\
+    <span aria-hidden="true">&times;</span>\
+  </button>\
+</div>`;
+              document.getElementById("alert-list").appendChild(element);
             }
           }
         }
@@ -215,6 +229,12 @@
       }
     }
     vehicles = vehicles; //To trigger Svelte reactive update
+    setTimeout(() => {
+      let parent = document.getElementById("alert-list");
+      while (parent.firstChild) {
+        parent.removeChild(parent.firstChild);
+      }
+    }, 5000);
   }
 
   setInterval(() => {
@@ -248,6 +268,16 @@
   #vehicle-list {
     max-height: 300px;
     max-width: 300px;
+    overflow: scroll;
+    -webkit-overflow-scrolling: touch;
+  }
+  #alert-list {
+    position: fixed;
+    bottom: 0;
+    z-index: 1000;
+    right: 0;
+    max-height: 180px;
+    max-width: 240px;
     overflow: scroll;
     -webkit-overflow-scrolling: touch;
   }
@@ -349,4 +379,6 @@
       &#x25B2;
     </button>
   </div>
+
+  <div id="alert-list" />
 </main>
